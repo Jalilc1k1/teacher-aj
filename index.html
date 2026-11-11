@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Teacher AJ</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef6ff;--surface:#ffffff;--surface-2:#e3f0fd;--line:#cfe0f3;
+  --text:#0a2342;--muted:#5d7898;
+  --primary:#1a8cf0;--primary-dark:#0d5fb0;--primary-soft:#d9ecff;
+  --navy:#0b3d91;--navy-dark:#072a66;
+  --good:#1fa855;--good-dark:#13773b;--good-soft:#dcf7e7;
+  --bad:#e83a5c;--bad-dark:#b01d3a;--bad-soft:#ffe1e7;
+  --gold:#e89c00;--gold-dark:#b07600;--gem:#1499d6;--flame:#ff8a00;--heart:#e83a5c;
+  --locked:#c9d6e6;--locked-dark:#a9b9cd;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#071427;--surface:#0e2242;--surface-2:#13305a;--line:#1f4271;
+    --text:#e6f2ff;--muted:#86a3c8;
+    --primary:#2b9dff;--primary-dark:#105ea9;--primary-soft:#11365f;
+    --navy:#1450b8;--navy-dark:#0a2f73;
+    --good:#34d07a;--good-soft:#0f3a2a;--bad:#ff5a7a;--bad-soft:#3d1424;
+    --gold:#ffb81f;--gem:#3cc4ff;--heart:#ff5a7a;
+    --locked:#24395a;--locked-dark:#172842;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#071427;--surface:#0e2242;--surface-2:#13305a;--line:#1f4271;
+  --text:#e6f2ff;--muted:#86a3c8;
+  --primary:#2b9dff;--primary-dark:#105ea9;--primary-soft:#11365f;
+  --navy:#1450b8;--navy-dark:#0a2f73;
+  --good:#34d07a;--good-soft:#0f3a2a;--bad:#ff5a7a;--bad-soft:#3d1424;
+  --gold:#ffb81f;--gem:#3cc4ff;--heart:#ff5a7a;
+  --locked:#24395a;--locked-dark:#172842;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;font-family:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-weight:700;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+#app{min-height:100%;display:flex;flex-direction:column}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.wrap{width:100%;max-width:520px;margin:0 auto;padding:12px 16px 110px}
+.muted{color:var(--muted)}.small{font-size:13px}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.c-flame{color:var(--flame)}.c-gold{color:var(--gold)}.c-gem{color:var(--gem)}.c-heart{color:var(--heart)}
+
+/* верхняя панель ученика */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:2px solid var(--line)}
+.topbar-in{max-width:520px;margin:0 auto;display:flex;justify-content:space-between;padding:12px 18px}
+.stat{display:flex;align-items:center;gap:5px;font-weight:900;font-size:17px}
+.stat .ico{font-size:20px}
+
+/* кнопки в стиле Duolingo */
+.btn{display:block;width:100%;padding:15px;border-radius:16px;background:var(--primary);color:#fff;font-weight:900;font-size:16px;letter-spacing:.03em;text-transform:uppercase;box-shadow:0 4px 0 var(--primary-dark);transition:transform .08s,box-shadow .08s}
+.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 var(--primary-dark)}
+.btn:disabled{background:var(--locked);box-shadow:0 4px 0 var(--locked-dark);color:var(--muted);cursor:default}
+.btn.ghost{background:var(--surface);color:var(--primary);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.btn.good{background:var(--good);box-shadow:0 4px 0 var(--good-dark)}
+.btn.bad{background:var(--bad);box-shadow:0 4px 0 var(--bad-dark)}
+.btn.small{width:auto;display:inline-block;padding:10px 14px;font-size:14px;letter-spacing:0;flex:none}
+.btn.light{background:rgba(255,255,255,.16);box-shadow:0 3px 0 rgba(0,0,0,.25);color:#fff}
+.btn + .btn{margin-top:12px}
+
+/* путь уроков */
+.unit{background:var(--navy);color:#fff;border-radius:20px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 5px 0 var(--navy-dark);margin:14px 0 34px}
+.unit small{opacity:.8;font-size:13px}
+.unit h2{font-size:20px;font-weight:900;line-height:1.2}
+.unit .count{background:rgba(255,255,255,.16);border-radius:12px;padding:8px 12px;font-weight:900;flex:none}
+.path{display:flex;flex-direction:column;align-items:center;gap:26px;padding-bottom:20px}
+.node-wrap{display:flex;flex-direction:column;align-items:center;position:relative}
+.node-wrap.has-bubble{margin-top:34px}
+.node{width:78px;height:72px;border-radius:50%;font-size:32px;display:grid;place-items:center;background:var(--primary);box-shadow:0 7px 0 var(--primary-dark);transition:transform .08s,box-shadow .08s}
+.node:active{transform:translateY(5px);box-shadow:0 2px 0 var(--primary-dark)}
+.node.done{background:var(--gold);box-shadow:0 7px 0 var(--gold-dark)}
+.node.locked{background:var(--locked);box-shadow:0 7px 0 var(--locked-dark);font-size:26px}
+.node.current{outline:6px solid var(--primary-soft);outline-offset:5px}
+.node-label{margin-top:14px;font-size:14px;color:var(--muted)}
+.bubble{position:absolute;top:-48px;background:var(--surface);border:2px solid var(--line);color:var(--primary);padding:6px 14px;border-radius:12px;font-weight:900;font-size:14px;white-space:nowrap;animation:bob 1.6s ease-in-out infinite}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-8px;margin-left:-6px;width:12px;height:12px;background:var(--surface);border-right:2px solid var(--line);border-bottom:2px solid var(--line);transform:rotate(45deg)}
+@keyframes bob{50%{transform:translateY(-5px)}}
+@media (prefers-reduced-motion:reduce){.bubble{animation:none}}
+
+/* нижнее меню */
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:2px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
+.nav-in{display:flex;max-width:520px;margin:0 auto;padding:6px}
+.nav button{flex:1;padding:6px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);border-radius:14px;border:2px solid transparent}
+.nav button .ico{font-size:24px}
+.nav button.on{color:var(--primary);background:var(--primary-soft);border-color:var(--primary)}
+
+/* карточки и общие блоки */
+h2.title{font-size:24px;font-weight:900;margin:16px 0 4px}
+h3{font-size:17px;font-weight:900;margin:22px 0 10px}
+.card{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:16px}
+.card + .card{margin-top:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:14px}
+.tile b{display:block;font-size:22px;font-weight:900}
+.tile span{color:var(--muted);font-size:13px}
+.big{font-size:34px;width:46px;text-align:center;flex:none}
+.big-emoji{font-size:80px;line-height:1.1}
+.hearts-row{font-size:22px;letter-spacing:2px;margin-bottom:10px}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:900;flex:none}
+.avatar.sm{width:36px;height:36px;font-size:15px}
+.avatar.lg{width:64px;height:64px;font-size:26px;box-shadow:0 4px 0 var(--primary-dark)}
+.profile-head{display:flex;align-items:center;gap:14px;margin:18px 0}
+.profile-head h2{font-size:22px;font-weight:900}
+.tag{display:inline-block;font-size:12px;padding:3px 9px;border-radius:8px;background:var(--primary-soft);color:var(--primary);margin-bottom:6px}
+.answer-box{background:var(--surface-2);border-radius:12px;padding:12px;margin-top:10px;white-space:pre-wrap;word-break:break-word;font-weight:600}
+.comment{margin-top:10px;font-size:14px}
+.grade-pill{width:44px;height:44px;border-radius:12px;color:#fff;display:grid;place-items:center;font-size:20px;font-weight:900;flex:none}
+.pill-wait{font-size:12px;padding:5px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap;flex:none}
+.empty{text-align:center;padding:30px 16px}
+.reg .form{text-align:left;margin:26px 0 22px}
+.reg .link{display:block;margin:18px auto 0}
+
+/* урок */
+.lesson{flex:1;width:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;padding:14px 16px 0}
+.lesson-top{display:flex;align-items:center;gap:12px}
+.x{font-size:24px;color:var(--muted);width:32px;height:32px}
+.bar{flex:1;height:16px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--primary);border-radius:99px;transition:width .3s}
+.q-type{color:var(--primary);font-size:14px;margin-top:28px}
+.q{font-size:22px;font-weight:900;margin:6px 0 20px;line-height:1.3}
+.options{display:grid;gap:12px}
+.opt{text-align:left;padding:16px;border-radius:16px;border:2px solid var(--line);border-bottom-width:5px;background:var(--surface);color:var(--text);font-size:17px;font-weight:800}
+.opt:active:not(:disabled){transform:translateY(2px)}
+.opt:disabled{opacity:1;cursor:default}
+.opt.sel{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.opt.right{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.answer{width:100%;min-height:150px;padding:16px;border-radius:16px;border:2px solid var(--line);border-bottom-width:5px;background:var(--surface);font-size:17px;resize:vertical}
+.answer:focus{outline:none;border-color:var(--primary)}
+.lesson-foot{margin-top:auto;padding:20px 0 calc(16px + env(safe-area-inset-bottom,0px))}
+.feedback{margin:auto -16px 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));border-radius:22px 22px 0 0}
+.feedback.good{background:var(--good-soft);color:var(--good)}
+.feedback.bad{background:var(--bad-soft);color:var(--bad)}
+.feedback.info{background:var(--primary-soft);color:var(--primary)}
+.feedback h4{font-size:21px;font-weight:900;margin-bottom:4px}
+.feedback p{margin-bottom:16px;color:var(--text)}
+.center{text-align:center;padding-top:40px}
+.reward-row{display:flex;gap:10px;margin:26px 0}
+.reward{flex:1;border:2px solid;border-radius:16px;overflow:hidden}
+.reward small{display:block;color:#fff;padding:4px;font-size:12px;font-weight:900}
+.reward b{display:block;padding:12px 4px;font-size:19px;font-weight:900}
+
+/* панель учителя */
+.admin-head{background:var(--navy);color:#fff;padding:14px 16px 0}
+.admin-head .in{max-width:520px;margin:0 auto}
+.admin-head h1{font-size:20px;font-weight:900}
+.tabs{display:flex;gap:4px;margin-top:12px}
+.tabs button{flex:1;padding:10px 2px;color:rgba(255,255,255,.72);border-bottom:4px solid transparent;font-weight:800;font-size:15px}
+.tabs button.on{color:#fff;border-color:#7cc4ff}
+.badge{background:var(--bad);color:#fff;border-radius:99px;font-size:11px;padding:1px 7px;margin-left:5px;vertical-align:2px}
+.emoji-box{width:48px;height:48px;border-radius:14px;background:var(--primary-soft);display:grid;place-items:center;font-size:24px;flex:none}
+.icon-btn{width:42px;height:42px;border-radius:12px;background:var(--surface-2);font-size:18px;flex:none}
+.link{color:var(--primary);font-weight:800;padding:8px 0}
+.form label{display:block;font-size:13px;color:var(--muted);margin-bottom:12px}
+.form input:not([type=radio]),.form textarea{display:block;width:100%;margin-top:6px;padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--text);font-size:16px;font-weight:700}
+.form textarea{min-height:80px;resize:vertical}
+.form input:focus,.form textarea:focus{outline:none;border-color:var(--primary)}
+.seg{display:flex;background:var(--surface-2);border-radius:12px;padding:4px;gap:4px;margin-bottom:14px}
+.seg button{flex:1;padding:9px 2px;border-radius:9px;font-size:13px;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--primary);box-shadow:0 2px 0 var(--line)}
+.opt-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.opt-row input[type=radio]{width:22px;height:22px;accent-color:var(--good);flex:none}
+.form .opt-row input:not([type=radio]){margin-top:0}
+.grade-row{display:flex;gap:8px;margin:14px 0 10px}
+.grade{flex:1;padding:11px 0;border-radius:12px;border:2px solid var(--line);border-bottom-width:4px;font-size:18px;font-weight:900;background:var(--surface)}
+.grade.on{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.lb{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:2px solid var(--line)}
+.lb:last-child{border-bottom:none}
+.rank{width:22px;font-weight:900;color:var(--muted);text-align:center}
+.lesson-stat + .lesson-stat{margin-top:14px}
+.meter{height:10px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--primary);border-radius:99px}
+
+/* всплывающие окна */
+.modal-bg{position:fixed;inset:0;background:rgba(3,12,28,.55);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.sheet{background:var(--surface);width:100%;max-width:520px;border-radius:24px 24px 0 0;padding:24px 18px calc(20px + env(safe-area-inset-bottom,0px));text-align:center}
+.sheet h3{margin:8px 0 6px}
+.sheet-btns{margin-top:18px}
+.pin{display:block;width:100%;text-align:center;font-size:28px;letter-spacing:.4em;padding:12px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--text);margin-top:14px}
+.pin:focus{outline:none;border-color:var(--primary)}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translate(-50%,-160%);background:var(--text);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:800;z-index:60;transition:transform .25s;max-width:90%;text-align:center}
+.toast.show{transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ================== НАСТРОЙКИ (можно менять) ================== */
+const CONFIG = {
+  TEACHER_PIN: '2015',     // PIN-код для входа учителя
+  MAX_HEARTS: 5,           // максимум жизней
+  HEART_MINUTES: 30,       // 1 жизнь восстанавливается за столько минут
+  HEART_PRICE: 10,         // алмазов за 1 жизнь
+  FULL_HEARTS_PRICE: 40,   // алмазов за все жизни сразу
+  LESSON_COINS: 20,        // монет за первое прохождение урока
+  PERFECT_BONUS: 10,       // доп. монеты за урок без ошибок
+  REPLAY_COINS: 5,         // монет за повтор урока
+  LESSON_XP: 10,           // опыта за урок
+  GRADE_COINS: 5           // монет за каждый балл оценки учителя
+};
+const EXCHANGE = [        // обмен монет на алмазы
+  { coins: 50, gems: 5 },
+  { coins: 100, gems: 12 },
+  { coins: 250, gems: 35 }
+];
+const TYPES = { choice: 'Выбор ответа', translate: 'Перевод', write: 'Письмо учителю' };
+
+/* ================== Telegram ================== */
+const tg = window.Telegram && window.Telegram.WebApp;
+try {
+  if (tg) {
+    tg.ready(); tg.expand();
+    if (tg.colorScheme) document.documentElement.dataset.theme = tg.colorScheme;
+    tg.onEvent('themeChanged', () => { document.documentElement.dataset.theme = tg.colorScheme; });
+  }
+} catch (e) {}
+const tgUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+const ME_ID = tgUser ? 'tg' + tgUser.id : 'guest';
+const TG_FIRST = (tgUser && tgUser.first_name) || '';
+const TG_LAST = (tgUser && tgUser.last_name) || '';
+const ME_NAME = [TG_FIRST, TG_LAST].filter(Boolean).join(' ') || 'Ученик';
+
+/* ================== Данные ================== */
+const KEY = 'teacher_aj_v1';
+const uid = () => Math.random().toString(36).slice(2, 9);
+const today = () => new Date().toDateString();
+const yesterday = () => new Date(Date.now() - 864e5).toDateString();
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = x => String(x).toLowerCase().replace(/[.,!?;:'"’‘`«»-]/g, '').replace(/\s+/g, ' ').trim();
+
+function newStudent(name) {
+  return { name, xp: 0, coins: 30, gems: 5, hearts: CONFIG.MAX_HEARTS, heartsAt: Date.now(), streak: 0, lastDay: null, done: {}, answers: 0, correct: 0 };
+}
+
+function seed() {
+  const lessons = [
+    { id: 'l1', title: 'Greetings', emoji: '👋', tasks: [
+      { type: 'choice', q: 'Как сказать «Привет»?', options: ['Hello', 'Goodbye', 'Thank you', 'Sorry'], answer: 0 },
+      { type: 'choice', q: '«Good morning» означает…', options: ['Добрый вечер', 'Доброе утро', 'Спокойной ночи', 'До свидания'], answer: 1 },
+      { type: 'translate', q: 'Переведите: «Меня зовут Али»', answer: 'My name is Ali|My name’s Ali' },
+      { type: 'choice', q: 'Как ответить на «How are you?»', options: ['I’m fine, thank you', 'My name is Tom', 'I’m from Tashkent', 'Goodbye'], answer: 0 },
+      { type: 'write', q: 'Напишите 2–3 предложения о себе на английском.' }
+    ]},
+    { id: 'l2', title: 'Family', emoji: '👨‍👩‍👧', tasks: [
+      { type: 'choice', q: '«Mother» — это…', options: ['Отец', 'Мама', 'Сестра', 'Брат'], answer: 1 },
+      { type: 'choice', q: 'My brother ___ a student.', options: ['am', 'is', 'are', 'be'], answer: 1 },
+      { type: 'translate', q: 'Переведите: «У меня есть сестра»', answer: 'I have a sister|I’ve got a sister|I have got a sister' },
+      { type: 'choice', q: 'Как сказать «бабушка»?', options: ['grandfather', 'aunt', 'grandmother', 'uncle'], answer: 2 },
+      { type: 'write', q: 'Расскажите о своей семье на английском (3–4 предложения).' }
+    ]},
+    { id: 'l3', title: 'Food', emoji: '🍎', tasks: [
+      { type: 'choice', q: '«Apple» — это…', options: ['Груша', 'Яблоко', 'Банан', 'Апельсин'], answer: 1 },
+      { type: 'choice', q: 'I ___ tea every morning.', options: ['drink', 'drinks', 'drinking', 'to drink'], answer: 0 },
+      { type: 'translate', q: 'Переведите: «Я люблю плов»', answer: 'I love plov|I like plov|I love pilaf|I like pilaf' },
+      { type: 'choice', q: 'Какое слово лишнее?', options: ['bread', 'cheese', 'table', 'rice'], answer: 2 },
+      { type: 'write', q: 'Какая ваша любимая еда и почему? Ответьте на английском.' }
+    ]},
+    { id: 'l4', title: 'Daily routine', emoji: '⏰', tasks: [
+      { type: 'choice', q: '«Wake up» означает…', options: ['Ложиться спать', 'Просыпаться', 'Завтракать', 'Идти домой'], answer: 1 },
+      { type: 'choice', q: 'She ___ to school at 8.', options: ['go', 'goes', 'going', 'gone'], answer: 1 },
+      { type: 'translate', q: 'Переведите: «Я встаю в семь»', answer: 'I get up at seven|I get up at 7|I wake up at seven|I wake up at 7' },
+      { type: 'write', q: 'Опишите свой обычный день (3–4 предложения).' }
+    ]}
+  ];
+  const d1 = Object.assign(newStudent('Дилноза (демо)'), { xp: 20, coins: 85, streak: 3, lastDay: today(), answers: 8, correct: 7,
+    done: { l1: { score: 100, date: Date.now() }, l2: { score: 80, date: Date.now() } } });
+  const d2 = Object.assign(newStudent('Тимур (демо)'), { xp: 10, coins: 40, answers: 4, correct: 3,
+    done: { l1: { score: 80, date: Date.now() } } });
+  return {
+    lessons,
+    students: { demo1: d1, demo2: d2 },
+    submissions: [
+      { id: uid(), sid: 'demo1', name: d1.name, lesson: 'Greetings', q: lessons[0].tasks[4].q, text: 'My name is Dilnoza. I am 14 years old. I live in Tashkent and I like reading books.', status: 'pending', date: Date.now() - 36e5 },
+      { id: uid(), sid: 'demo2', name: d2.name, lesson: 'Greetings', q: lessons[0].tasks[4].q, text: 'I am Timur. I from Tashkent. I like football very much.', status: 'pending', date: Date.now() - 72e5 }
+    ]
+  };
+}
+
+function load() {
+  try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+  return seed();
+}
+let db = load();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} }
+const getLesson = id => db.lessons.find(l => l.id === id);
+const visibleLessons = () => db.lessons.filter(l => l.tasks.length);
+
+function me() {
+  let s = db.students[ME_ID];
+  if (!s) { s = db.students[ME_ID] = newStudent(ME_NAME); save(); }
+  regen(s);
+  return s;
+}
+
+/* жизни и серия дней */
+function regen(s) {
+  if (s.hearts >= CONFIG.MAX_HEARTS) return;
+  const step = CONFIG.HEART_MINUTES * 6e4;
+  const n = Math.floor((Date.now() - s.heartsAt) / step);
+  if (n > 0) { s.hearts = Math.min(CONFIG.MAX_HEARTS, s.hearts + n); s.heartsAt += n * step; save(); }
+}
+function loseHeart(s) {
+  if (s.hearts >= CONFIG.MAX_HEARTS) s.heartsAt = Date.now();
+  s.hearts = Math.max(0, s.hearts - 1);
+}
+const nextHeartMin = s => Math.max(1, Math.ceil((s.heartsAt + CONFIG.HEART_MINUTES * 6e4 - Date.now()) / 6e4));
+const streakOf = s => (s.lastDay === today() || s.lastDay === yesterday()) ? s.streak : 0;
+function bumpStreak(s) {
+  if (s.lastDay === today()) return;
+  s.streak = s.lastDay === yesterday() ? s.streak + 1 : 1;
+  s.lastDay = today();
+}
+
+/* ================== Помощники ================== */
+const $ = sel => document.querySelector(sel);
+const app = $('#app');
+const ui = { mode: 'student', tab: 'learn', aTab: 'tasks', edit: null, newType: 'choice', draftQ: '', lesson: null, grades: {}, comments: {} };
+let pendingConfirm = null;
+
+function plural(n, a, b, c) {
+  const m10 = n % 10, m100 = n % 100;
+  return n + ' ' + (m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? b : c);
+}
+function ago(t) {
+  const m = Math.round((Date.now() - t) / 6e4);
+  if (m < 1) return 'только что';
+  if (m < 60) return m + ' мин назад';
+  const h = Math.round(m / 60);
+  return h < 24 ? h + ' ч назад' : new Date(t).toLocaleDateString('ru-RU');
+}
+const gradeColor = g => g >= 4 ? 'var(--good)' : g === 3 ? 'var(--gold)' : 'var(--bad)';
+const tile = (v, l) => `<div class="tile"><b>${v}</b><span>${l}</span></div>`;
+const initial = n => esc((n || '?').trim().charAt(0).toUpperCase() || '?');
+
+function haptic(type) {
+  try {
+    if (!tg || !tg.HapticFeedback) return;
+    if (type === 'light') tg.HapticFeedback.impactOccurred('light');
+    else tg.HapticFeedback.notificationOccurred(type);
+  } catch (e) {}
+}
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2300);
+}
+function sheet(html) { $('#modal').innerHTML = `<div class="modal-bg" data-act="sheet-bg"><div class="sheet">${html}</div></div>`; }
+function closeSheet() { $('#modal').innerHTML = ''; }
+function confirmBox(msg, yesLabel, ok) {
+  pendingConfirm = ok;
+  sheet(`<h3>${esc(msg)}</h3><div class="sheet-btns"><button class="btn bad" data-act="confirm-yes">${yesLabel}</button><button class="btn ghost" data-act="sheet-close">Отмена</button></div>`);
+}
+
+/* кнопка «Назад» Телеграма */
+function syncBack() {
+  try {
+    if (!tg || !tg.BackButton || !tg.isVersionAtLeast('6.1')) return;
+    (ui.lesson || ui.mode === 'teacher') ? tg.BackButton.show() : tg.BackButton.hide();
+  } catch (e) {}
+}
+function goBack() {
+  if ($('#modal').innerHTML) return closeSheet();
+  if (ui.lesson) ui.lesson = null;
+  else if (ui.edit) ui.edit = null;
+  else if (ui.mode === 'teacher') ui.mode = 'student';
+  render();
+}
+try { if (tg && tg.BackButton) tg.BackButton.onClick(goBack); } catch (e) {}
+
+/* ================== Отрисовка ================== */
+function render() {
+  syncBack();
+  if (ui.lesson) return renderLesson();
+  if (ui.mode === 'teacher') return renderTeacher();
+  if (!isRegistered()) return regView();
+  const s = me();
+  const body = ui.tab === 'learn' ? learnView(s) : ui.tab === 'shop' ? shopView(s) : profileView(s);
+  app.innerHTML = topbar(s) + `<main class="wrap">${body}</main>` + navBar();
+}
+
+/* --- Регистрация: имя и фамилия, заполняются из Телеграма автоматически --- */
+const isRegistered = () => !!(db.students[ME_ID] && db.students[ME_ID].reg);
+function regView() {
+  const s = db.students[ME_ID];
+  const first = s && s.first != null ? s.first : TG_FIRST;
+  const last = s && s.last != null ? s.last : TG_LAST;
+  app.innerHTML = `<div class="lesson reg"><div class="center">
+      <div class="big-emoji">👋</div>
+      <h2 class="title">Добро пожаловать в Teacher AJ</h2>
+      <p class="muted">Проверьте имя и фамилию. Под этим именем вас увидит учитель.</p>
+      <div class="card form">
+        <label>Имя<input id="rFirst" value="${esc(first)}" autocomplete="given-name" maxlength="40"></label>
+        <label>Фамилия<input id="rLast" value="${esc(last)}" autocomplete="family-name" maxlength="40"></label>
+      </div>
+      <button class="btn" data-act="register">Начать учиться</button>
+      <button class="link" data-act="teacher-login">Я учитель</button>
+    </div></div>`;
+}
+
+function topbar(s) {
+  return `<header class="topbar"><div class="topbar-in">
+    <div class="stat c-flame" title="Дней подряд"><span class="ico">🔥</span>${streakOf(s)}</div>
+    <div class="stat c-gold" title="Монеты"><span class="ico">🪙</span>${s.coins}</div>
+    <div class="stat c-gem" title="Алмазы"><span class="ico">💎</span>${s.gems}</div>
+    <div class="stat c-heart" title="Жизни"><span class="ico">❤️</span>${s.hearts}</div>
+  </div></header>`;
+}
+function navBar() {
+  const b = (id, ico, label) => `<button class="${ui.tab === id ? 'on' : ''}" data-act="tab" data-id="${id}"><span class="ico">${ico}</span>${label}</button>`;
+  return `<nav class="nav"><div class="nav-in">${b('learn', '🏠', 'Учёба')}${b('shop', '🛒', 'Магазин')}${b('profile', '👤', 'Профиль')}</div></nav>`;
+}
+
+/* --- Учёба: путь уроков --- */
+function learnView(s) {
+  const L = visibleLessons();
+  if (!L.length) return `<div class="card empty"><div class="big-emoji">📭</div><p>Учитель ещё не добавил уроки.</p></div>`;
+  const doneN = L.filter(l => s.done[l.id]).length;
+  const shift = [0, 58, 86, 58, 0, -58, -86, -58];
+  const nodes = L.map((l, i) => {
+    const done = !!s.done[l.id];
+    const open = i === 0 || !!s.done[L[i - 1].id];
+    const state = done ? 'done' : open ? 'current' : 'locked';
+    return `<div class="node-wrap ${state === 'current' ? 'has-bubble' : ''}" style="transform:translateX(${shift[i % 8]}px)">
+      ${state === 'current' ? '<div class="bubble">Начать</div>' : ''}
+      <button class="node ${state}" data-act="open" data-id="${l.id}" aria-label="${esc(l.title)}">${state === 'locked' ? '🔒' : esc(l.emoji)}</button>
+      <div class="node-label">${esc(l.title)}</div>
+    </div>`;
+  }).join('');
+  return `<section class="unit"><div><small>Teacher AJ</small><h2>Раздел 1: первые шаги</h2></div><div class="count">${doneN}/${L.length}</div></section>
+    <div class="path">${nodes}</div>`;
+}
+
+function openLesson(id) {
+  const L = visibleLessons(), i = L.findIndex(l => l.id === id), l = L[i], s = me();
+  if (!l) return;
+  if (i > 0 && !s.done[l.id] && !s.done[L[i - 1].id]) { haptic('error'); return toast('Сначала пройдите предыдущий урок'); }
+  if (s.hearts <= 0) return noHearts(s, false);
+  haptic('light');
+  ui.lesson = { id, i: 0, picked: null, input: '', checked: false, ok: false, right: 0, mistakes: 0, waiting: false, finished: null };
+  render(); scrollTo(0, 0);
+}
+
+function noHearts(s, inLesson) {
+  sheet(`<div class="big-emoji">💔</div><h3>Жизни закончились</h3>
+    <p class="muted">Новая жизнь появится через ${nextHeartMin(s)} мин. Или восстановите все жизни за алмазы.</p>
+    <div class="sheet-btns">
+      <button class="btn" data-act="refill-all">Восстановить за ${CONFIG.FULL_HEARTS_PRICE} 💎</button>
+      <button class="btn ghost" data-act="${inLesson ? 'quit' : 'sheet-close'}">${inLesson ? 'Выйти из урока' : 'Подождать'}</button>
+    </div>`);
+}
+
+/* --- Экран урока --- */
+function renderLesson() {
+  const st = ui.lesson, l = getLesson(st.id), s = me();
+  if (!l || !l.tasks.length) { ui.lesson = null; return render(); }
+  if (st.finished) return finishView(st, l);
+  const t = l.tasks[st.i];
+  const pct = Math.round((st.i + (st.checked ? 1 : 0)) / l.tasks.length * 100);
+  let body;
+  if (t.type === 'choice') {
+    body = `<div class="options">${t.options.map((o, k) => {
+      let c = '';
+      if (st.checked) c = k === t.answer ? 'right' : (k === st.picked ? 'wrong' : '');
+      else if (k === st.picked) c = 'sel';
+      return `<button class="opt ${c}" data-act="pick" data-id="${k}" ${st.checked ? 'disabled' : ''}>${esc(o)}</button>`;
+    }).join('')}</div>`;
+  } else {
+    body = `<textarea id="ans" class="answer" placeholder="${t.type === 'write' ? 'Напишите ответ на английском…' : 'Напишите перевод…'}" ${st.checked ? 'disabled' : ''}>${esc(st.input)}</textarea>`;
+  }
+  const ready = t.type === 'choice' ? st.picked !== null : st.input.trim().length > 0;
+  let foot;
+  if (!st.checked) {
+    foot = `<div class="lesson-foot"><button id="checkBtn" class="btn" data-act="check" ${ready ? '' : 'disabled'}>${t.type === 'write' ? 'Отправить учителю' : 'Проверить'}</button></div>`;
+  } else {
+    const kind = t.type === 'write' ? 'info' : st.ok ? 'good' : 'bad';
+    const title = t.type === 'write' ? 'Отправлено учителю ✉️' : st.ok ? 'Отлично! 🎉' : 'Неправильно';
+    const text = t.type === 'write' ? 'Оценку и комментарий увидите в профиле.'
+      : st.ok ? 'Так держать!'
+      : 'Правильный ответ: ' + esc(t.type === 'choice' ? t.options[t.answer] : t.answer.split('|')[0]);
+    foot = `<div class="feedback ${kind}"><h4>${title}</h4><p>${text}</p><button class="btn ${kind === 'info' ? '' : kind}" data-act="next">Продолжить</button></div>`;
+  }
+  app.innerHTML = `<div class="lesson">
+    <div class="lesson-top">
+      <button class="x" data-act="quit" aria-label="Выйти из урока">✕</button>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <div class="stat c-heart"><span class="ico">❤️</span>${s.hearts}</div>
+    </div>
+    <div class="q-type">${TYPES[t.type]}</div>
+    <div class="q">${esc(t.q)}</div>
+    ${body}
+    ${foot}
+  </div>`;
+}
+
+function check() {
+  const st = ui.lesson, l = getLesson(st.id), t = l.tasks[st.i], s = me();
+  if (st.checked) return;
+  if (t.type === 'choice') {
+    if (st.picked === null) return;
+    st.ok = st.picked === t.answer;
+  } else {
+    if (!st.input.trim()) return;
+    if (t.type === 'translate') st.ok = t.answer.split('|').some(a => norm(a) === norm(st.input));
+    else {
+      st.ok = true;
+      db.submissions.unshift({ id: uid(), sid: ME_ID, name: s.name, lesson: l.title, q: t.q, text: st.input.trim(), status: 'pending', date: Date.now() });
+    }
+  }
+  st.checked = true;
+  if (st.ok) st.right++; else { st.mistakes++; loseHeart(s); }
+  if (t.type !== 'write') { s.answers++; if (st.ok) s.correct++; }
+  haptic(st.ok ? 'success' : 'error');
+  save(); render();
+}
+
+function next() {
+  const st = ui.lesson, l = getLesson(st.id), s = me();
+  if (s.hearts <= 0 && st.i < l.tasks.length - 1) { st.waiting = true; return noHearts(s, true); }
+  advance();
+}
+function advance() {
+  const st = ui.lesson, l = getLesson(st.id);
+  st.waiting = false;
+  st.i++; st.picked = null; st.input = ''; st.checked = false; st.ok = false;
+  if (st.i >= l.tasks.length) finish();
+  render(); scrollTo(0, 0);
+}
+function finish() {
+  const st = ui.lesson, l = getLesson(st.id), s = me();
+  const score = Math.round(st.right / l.tasks.length * 100);
+  const first = !s.done[l.id], perfect = st.mistakes === 0;
+  const coins = first ? CONFIG.LESSON_COINS + (perfect ? CONFIG.PERFECT_BONUS : 0) : CONFIG.REPLAY_COINS;
+  const xp = first ? CONFIG.LESSON_XP : Math.ceil(CONFIG.LESSON_XP / 2);
+  s.coins += coins; s.xp += xp;
+  s.done[l.id] = { score: Math.max(score, first ? 0 : s.done[l.id].score), date: Date.now() };
+  bumpStreak(s); save();
+  st.finished = { coins, xp, score, perfect };
+  haptic('success');
+}
+const reward = (label, val, c) => `<div class="reward" style="border-color:${c}"><small style="background:${c}">${label}</small><b style="color:${c}">${val}</b></div>`;
+function finishView(st, l) {
+  const f = st.finished;
+  app.innerHTML = `<div class="lesson"><div class="center">
+      <div class="big-emoji">${f.perfect ? '🏆' : '🎉'}</div>
+      <h2 class="title">${f.perfect ? 'Без единой ошибки!' : 'Урок пройден!'}</h2>
+      <p class="muted">${esc(l.title)}</p>
+      <div class="reward-row">
+        ${reward('Опыт', '⚡ ' + f.xp, 'var(--gold)')}
+        ${reward('Монеты', '🪙 ' + f.coins, 'var(--primary)')}
+        ${reward('Точность', f.score + '%', 'var(--good)')}
+      </div>
+    </div>
+    <div class="lesson-foot"><button class="btn" data-act="quit">Продолжить</button></div>
+  </div>`;
+}
+
+/* --- Магазин --- */
+function shopView(s) {
+  const full = s.hearts >= CONFIG.MAX_HEARTS;
+  const ex = EXCHANGE.map((o, i) => `<div class="card row">
+      <div class="big">💎</div>
+      <div class="grow"><b>${plural(o.gems, 'алмаз', 'алмаза', 'алмазов')}</b><div class="muted small">обмен на ${o.coins} монет</div></div>
+      <button class="btn small" data-act="exchange" data-id="${i}" ${s.coins < o.coins ? 'disabled' : ''}>🪙 ${o.coins}</button>
+    </div>`).join('');
+  return `<h2 class="title">Магазин</h2>
+    <p class="muted small">Монеты дают за уроки и за оценки учителя.</p>
+    <h3>Обмен монет на алмазы</h3>${ex}
+    <h3>Жизни</h3>
+    <div class="hearts-row">${'❤️'.repeat(s.hearts)}${'🤍'.repeat(CONFIG.MAX_HEARTS - s.hearts)}</div>
+    <div class="card row">
+      <div class="big">❤️</div>
+      <div class="grow"><b>Одна жизнь</b><div class="muted small">${full ? 'Все жизни на месте' : 'Бесплатно — через ' + nextHeartMin(s) + ' мин'}</div></div>
+      <button class="btn small" data-act="buy-heart" ${full || s.gems < CONFIG.HEART_PRICE ? 'disabled' : ''}>💎 ${CONFIG.HEART_PRICE}</button>
+    </div>
+    <div class="card row">
+      <div class="big">💖</div>
+      <div class="grow"><b>Все жизни сразу</b><div class="muted small">До ${CONFIG.MAX_HEARTS} жизней</div></div>
+      <button class="btn small" data-act="refill-all" ${full || s.gems < CONFIG.FULL_HEARTS_PRICE ? 'disabled' : ''}>💎 ${CONFIG.FULL_HEARTS_PRICE}</button>
+    </div>`;
+}
+
+/* --- Профиль ученика --- */
+function profileView(s) {
+  const L = visibleLessons();
+  const mine = db.submissions.filter(x => x.sid === ME_ID);
+  const acc = s.answers ? Math.round(s.correct / s.answers * 100) : 0;
+  const works = mine.map(x => `<div class="card">
+      <div class="row">
+        <div class="grow"><span class="tag">${esc(x.lesson)}</span><div class="small muted">${esc(x.q)}</div></div>
+        ${x.status === 'graded' ? `<div class="grade-pill" style="background:${gradeColor(x.grade)}">${x.grade}</div>` : '<span class="pill-wait">На проверке</span>'}
+      </div>
+      <div class="answer-box">${esc(x.text)}</div>
+      ${x.comment ? `<div class="comment">💬 ${esc(x.comment)}</div>` : ''}
+    </div>`).join('');
+  return `<div class="profile-head"><div class="avatar lg">${initial(s.name)}</div><div><h2>${esc(s.name)}</h2><div class="muted small">Изучает английский</div></div></div>
+    <div class="grid">
+      ${tile('⚡ ' + s.xp, 'Опыт')}${tile('🔥 ' + streakOf(s), 'Дней подряд')}
+      ${tile('📘 ' + L.filter(l => s.done[l.id]).length + '/' + L.length, 'Уроков пройдено')}${tile('🎯 ' + acc + '%', 'Точность')}
+    </div>
+    <h3>Мои работы</h3>
+    ${works || '<p class="muted">Здесь появятся письменные задания после отправки учителю.</p>'}
+    <button class="btn ghost" style="margin-top:32px" data-act="teacher-login">Вход для учителя</button>`;
+}
+
+/* ================== Панель учителя ================== */
+function renderTeacher() {
+  const pending = db.submissions.filter(x => x.status === 'pending').length;
+  const t = (id, label, badge) => `<button class="${ui.aTab === id ? 'on' : ''}" data-act="atab" data-id="${id}">${label}${badge ? `<span class="badge">${badge}</span>` : ''}</button>`;
+  const body = ui.aTab === 'tasks' ? (ui.edit ? editorView() : lessonsAdmin()) : ui.aTab === 'review' ? reviewView() : statsView();
+  app.innerHTML = `<header class="admin-head"><div class="in">
+      <div class="row"><div class="grow"><h1>Teacher AJ</h1><div class="small" style="opacity:.8">Панель учителя</div></div>
+      <button class="btn small light" data-act="logout">Выйти</button></div>
+      <div class="tabs">${t('tasks', 'Задания')}${t('review', 'Проверка', pending)}${t('stats', 'Статистика')}</div>
+    </div></header>
+    <main class="wrap">${body}</main>`;
+}
+
+function lessonsAdmin() {
+  const list = db.lessons.map(l => `<div class="card row">
+      <div class="emoji-box">${esc(l.emoji)}</div>
+      <div class="grow"><b>${esc(l.title)}</b><div class="muted small">${l.tasks.length ? plural(l.tasks.length, 'задание', 'задания', 'заданий') : 'Нет заданий, ученики урок не видят'}</div></div>
+      <button class="icon-btn" data-act="lesson-edit" data-id="${l.id}" aria-label="Изменить">✏️</button>
+      <button class="icon-btn" data-act="lesson-del" data-id="${l.id}" aria-label="Удалить">🗑</button>
+    </div>`).join('');
+  return `<button class="btn" style="margin-top:8px" data-act="lesson-new">+ Новый урок</button>
+    <h3>Уроки по порядку (${db.lessons.length})</h3>
+    ${list || '<p class="muted">Уроков пока нет. Создайте первый.</p>'}`;
+}
+
+function editorView() {
+  const l = getLesson(ui.edit);
+  if (!l) { ui.edit = null; return lessonsAdmin(); }
+  const tasks = l.tasks.map((t, i) => `<div class="card row">
+      <div class="grow">
+        <span class="tag">${TYPES[t.type]}</span>
+        <div>${esc(t.q)}</div>
+        <div class="muted small">${t.type === 'choice' ? 'Ответ: ' + esc(t.options[t.answer]) : t.type === 'translate' ? 'Ответ: ' + esc(t.answer.split('|').join(' / ')) : 'Проверяете вы'}</div>
+      </div>
+      <button class="icon-btn" data-act="task-del" data-id="${i}" aria-label="Удалить задание">🗑</button>
+    </div>`).join('');
+  let extra;
+  if (ui.newType === 'choice') {
+    extra = [0, 1, 2, 3].map(k => `<div class="opt-row"><input type="radio" name="nc" value="${k}" ${k === 0 ? 'checked' : ''} aria-label="Правильный вариант ${k + 1}"><input id="no${k}" placeholder="Вариант ${k + 1}"></div>`).join('')
+      + '<p class="muted small">Отметьте кружком правильный вариант.</p>';
+  } else if (ui.newType === 'translate') {
+    extra = `<label>Правильный ответ<input id="na" placeholder="My name is Ali | My name’s Ali"></label><p class="muted small">Если правильных ответов несколько, разделите их знаком |</p>`;
+  } else {
+    extra = '<p class="muted small">Ученик пишет свободный ответ, а вы ставите оценку во вкладке «Проверка».</p>';
+  }
+  return `<button class="link" data-act="edit-close">← Все уроки</button>
+    <div class="card form">
+      <label>Название урока<input data-bind="title" value="${esc(l.title)}"></label>
+      <label>Эмодзи<input data-bind="emoji" value="${esc(l.emoji)}" maxlength="8"></label>
+    </div>
+    <h3>Задания (${l.tasks.length})</h3>
+    ${tasks || '<p class="muted">Добавьте первое задание ниже.</p>'}
+    <h3>Новое задание</h3>
+    <div class="card form">
+      <div class="seg">${['choice', 'translate', 'write'].map(tp => `<button class="${ui.newType === tp ? 'on' : ''}" data-act="new-type" data-id="${tp}">${tp === 'choice' ? 'Выбор' : tp === 'translate' ? 'Перевод' : 'Письмо'}</button>`).join('')}</div>
+      <label>Вопрос<textarea id="nq" placeholder="${ui.newType === 'choice' ? 'Например: «Cat» — это…' : ui.newType === 'translate' ? 'Например: Переведите «Я студент»' : 'Например: Опишите свою комнату'}">${esc(ui.draftQ)}</textarea></label>
+      ${extra}
+      <button class="btn" style="margin-top:6px" data-act="task-add">Добавить задание</button>
+    </div>`;
+}
+
+function reviewView() {
+  const pend = db.submissions.filter(x => x.status === 'pending');
+  const done = db.submissions.filter(x => x.status === 'graded').slice(0, 10);
+  const cards = pend.map(x => `<div class="card form">
+      <div class="row"><div class="avatar sm">${initial(x.name)}</div><div class="grow"><b>${esc(x.name)}</b><div class="muted small">${esc(x.lesson)}, ${ago(x.date)}</div></div></div>
+      <div class="small muted" style="margin-top:12px">${esc(x.q)}</div>
+      <div class="answer-box">${esc(x.text)}</div>
+      <div class="grade-row">${[1, 2, 3, 4, 5].map(g => `<button class="grade ${ui.grades[x.id] === g ? 'on' : ''}" data-act="grade" data-id="${x.id}" data-g="${g}">${g}</button>`).join('')}</div>
+      <textarea id="cm-${x.id}" data-comment="${x.id}" placeholder="Комментарий для ученика (необязательно)">${esc(ui.comments[x.id] || '')}</textarea>
+      <button class="btn" style="margin-top:12px" data-act="grade-save" data-id="${x.id}">Поставить оценку</button>
+    </div>`).join('');
+  const old = done.map(x => `<div class="card row">
+      <div class="grow"><b>${esc(x.name)}</b><div class="muted small">${esc(x.lesson)}${x.comment ? ': ' + esc(x.comment) : ''}</div></div>
+      <div class="grade-pill" style="background:${gradeColor(x.grade)}">${x.grade}</div>
+    </div>`).join('');
+  return `<h3>Ждут проверки (${pend.length})</h3>
+    ${cards || '<div class="card empty"><p class="muted">Все работы проверены 👍</p></div>'}
+    ${old ? '<h3>Недавно проверенные</h3>' + old : ''}`;
+}
+
+function statsView() {
+  const all = Object.values(db.students);
+  const L = visibleLessons();
+  const scores = all.flatMap(s => L.filter(l => s.done[l.id]).map(l => s.done[l.id].score));
+  const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+  const graded = db.submissions.filter(x => x.status === 'graded');
+  const avgGrade = graded.length ? (graded.reduce((a, x) => a + x.grade, 0) / graded.length).toFixed(1) : '—';
+  const top = all.slice().sort((a, b) => b.xp - a.xp).slice(0, 10);
+  const lb = top.map((s, i) => `<div class="lb">
+      <div class="rank">${i + 1}</div><div class="avatar sm">${initial(s.name)}</div>
+      <div class="grow"><b>${esc(s.name)}</b><div class="muted small">${plural(L.filter(l => s.done[l.id]).length, 'урок', 'урока', 'уроков')}, точность ${s.answers ? Math.round(s.correct / s.answers * 100) : 0}%</div></div>
+      <b class="c-gold">⚡ ${s.xp}</b>
+    </div>`).join('');
+  const per = L.map(l => {
+    const d = all.map(s => s.done[l.id]).filter(Boolean);
+    const a = d.length ? Math.round(d.reduce((x, y) => x + y.score, 0) / d.length) : 0;
+    return `<div class="lesson-stat">
+      <div class="row"><span>${esc(l.emoji)}</span><b class="grow">${esc(l.title)}</b><span class="muted small">прошли ${d.length} из ${all.length}, в среднем ${a}%</span></div>
+      <div class="meter"><i style="width:${all.length ? d.length / all.length * 100 : 0}%"></i></div>
+    </div>`;
+  }).join('');
+  return `<div class="grid" style="margin-top:8px">
+      ${tile('👥 ' + all.length, 'Учеников')}${tile('✅ ' + scores.length, 'Уроков пройдено')}
+      ${tile('🎯 ' + avg + '%', 'Средний результат')}${tile('⭐ ' + avgGrade, 'Средняя оценка')}
+    </div>
+    <h3>Рейтинг учеников</h3>
+    <div class="card">${lb || '<p class="muted">Учеников пока нет.</p>'}</div>
+    <h3>Прохождение уроков</h3>
+    <div class="card">${per || '<p class="muted">Уроков с заданиями пока нет.</p>'}</div>
+    <button class="btn ghost" style="margin-top:32px" data-act="reset">Сбросить все данные</button>`;
+}
+
+/* ================== Действия ================== */
+const ACT = {
+  tab: el => { ui.tab = el.dataset.id; haptic('light'); render(); scrollTo(0, 0); },
+  open: el => openLesson(el.dataset.id),
+  pick: el => { if (ui.lesson.checked) return; ui.lesson.picked = +el.dataset.id; haptic('light'); render(); },
+  check, next,
+  quit: () => { ui.lesson = null; closeSheet(); render(); scrollTo(0, 0); },
+  'sheet-close': closeSheet,
+  'sheet-bg': (el, e) => { if (e.target === el) closeSheet(); },
+  'confirm-yes': () => { const f = pendingConfirm; pendingConfirm = null; closeSheet(); if (f) f(); },
+
+  exchange: el => {
+    const o = EXCHANGE[+el.dataset.id], s = me();
+    if (s.coins < o.coins) return toast('Не хватает монет');
+    s.coins -= o.coins; s.gems += o.gems; save(); haptic('success');
+    toast('+' + plural(o.gems, 'алмаз', 'алмаза', 'алмазов')); render();
+  },
+  'buy-heart': () => {
+    const s = me();
+    if (s.hearts >= CONFIG.MAX_HEARTS) return toast('Все жизни на месте');
+    if (s.gems < CONFIG.HEART_PRICE) return toast('Не хватает алмазов, обменяйте монеты');
+    s.gems -= CONFIG.HEART_PRICE; s.hearts++;
+    if (s.hearts >= CONFIG.MAX_HEARTS) s.heartsAt = Date.now();
+    save(); haptic('success'); render();
+  },
+  'refill-all': () => {
+    const s = me();
+    if (s.hearts >= CONFIG.MAX_HEARTS) { closeSheet(); return toast('Все жизни на месте'); }
+    if (s.gems < CONFIG.FULL_HEARTS_PRICE) { haptic('error'); return toast(`Нужно ${CONFIG.FULL_HEARTS_PRICE} 💎, обменяйте монеты в магазине`); }
+    s.gems -= CONFIG.FULL_HEARTS_PRICE; s.hearts = CONFIG.MAX_HEARTS; s.heartsAt = Date.now();
+    save(); closeSheet(); haptic('success'); toast('Жизни восстановлены ❤️');
+    if (ui.lesson && ui.lesson.waiting) advance(); else render();
+  },
+
+  register: () => {
+    const first = $('#rFirst').value.trim(), last = $('#rLast').value.trim();
+    if (!first) { haptic('error'); return toast('Напишите имя'); }
+    if (!last) { haptic('error'); return toast('Напишите фамилию'); }
+    const name = first + ' ' + last;
+    const s = db.students[ME_ID] || (db.students[ME_ID] = newStudent(name));
+    Object.assign(s, { name, first, last, reg: true });
+    db.submissions.forEach(x => { if (x.sid === ME_ID) x.name = name; });
+    save(); haptic('success'); toast('Привет, ' + first + '!'); render();
+  },
+  'teacher-login': () => {
+    sheet(`<div class="big-emoji">🧑‍🏫</div><h3>Вход для учителя</h3><p class="muted small">Введите PIN-код</p>
+      <input id="pin" class="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="off" aria-label="PIN-код">
+      <div class="sheet-btns"><button class="btn" data-act="pin-ok">Войти</button><button class="btn ghost" data-act="sheet-close">Отмена</button></div>`);
+    setTimeout(() => { const p = $('#pin'); if (p) p.focus(); }, 50);
+  },
+  'pin-ok': () => {
+    if ($('#pin').value === CONFIG.TEACHER_PIN) {
+      closeSheet(); ui.mode = 'teacher'; ui.aTab = 'tasks'; ui.edit = null; haptic('success'); render(); scrollTo(0, 0);
+    } else { haptic('error'); toast('Неверный PIN-код'); }
+  },
+  logout: () => { ui.mode = 'student'; ui.edit = null; ui.tab = 'learn'; render(); scrollTo(0, 0); },
+  atab: el => { ui.aTab = el.dataset.id; ui.edit = null; render(); scrollTo(0, 0); },
+
+  'lesson-new': () => {
+    const l = { id: uid(), title: 'Новый урок', emoji: '📘', tasks: [] };
+    db.lessons.push(l); save();
+    ui.edit = l.id; ui.newType = 'choice'; ui.draftQ = ''; render(); scrollTo(0, 0);
+  },
+  'lesson-edit': el => { ui.edit = el.dataset.id; ui.newType = 'choice'; ui.draftQ = ''; render(); scrollTo(0, 0); },
+  'lesson-del': el => {
+    const l = getLesson(el.dataset.id);
+    confirmBox(`Удалить урок «${l.title}» вместе с заданиями?`, 'Удалить', () => {
+      db.lessons = db.lessons.filter(x => x.id !== l.id); save(); toast('Урок удалён'); render();
+    });
+  },
+  'edit-close': () => { ui.edit = null; render(); scrollTo(0, 0); },
+  'new-type': el => { const q = $('#nq'); ui.draftQ = q ? q.value : ''; ui.newType = el.dataset.id; render(); },
+  'task-add': () => {
+    const l = getLesson(ui.edit), q = $('#nq').value.trim();
+    if (!q) return toast('Напишите вопрос');
+    const t = { type: ui.newType, q };
+    if (t.type === 'choice') {
+      const checked = document.querySelector('input[name=nc]:checked');
+      const sel = checked ? +checked.value : 0;
+      const raw = [0, 1, 2, 3].map(k => $('#no' + k).value.trim());
+      if (!raw[sel]) return toast('Заполните правильный вариант (отмечен кружком)');
+      const opts = raw.filter(Boolean);
+      if (opts.length < 2) return toast('Нужно минимум 2 варианта');
+      t.options = opts; t.answer = opts.indexOf(raw[sel]);
+    } else if (t.type === 'translate') {
+      const a = $('#na').value.trim();
+      if (!a) return toast('Напишите правильный ответ');
+      t.answer = a.split('|').map(x => x.trim()).filter(Boolean).join('|');
+    }
+    l.tasks.push(t); ui.draftQ = ''; save(); haptic('success'); toast('Задание добавлено'); render();
+  },
+  'task-del': el => {
+    const l = getLesson(ui.edit), i = +el.dataset.id;
+    confirmBox('Удалить это задание?', 'Удалить', () => { l.tasks.splice(i, 1); save(); render(); });
+  },
+
+  grade: el => {
+    const id = el.dataset.id;
+    ui.grades[id] = +el.dataset.g;
+    el.closest('.card').querySelectorAll('.grade').forEach(b => b.classList.toggle('on', b === el));
+    haptic('light');
+  },
+  'grade-save': el => {
+    const id = el.dataset.id, g = ui.grades[id];
+    if (!g) return toast('Выберите оценку от 1 до 5');
+    const x = db.submissions.find(s => s.id === id);
+    if (!x) return;
+    x.status = 'graded'; x.grade = g; x.comment = ($('#cm-' + id).value || '').trim(); x.gradedAt = Date.now();
+    const st = db.students[x.sid];
+    if (st) st.coins += g * CONFIG.GRADE_COINS;
+    delete ui.grades[id]; delete ui.comments[id];
+    save(); haptic('success'); toast(`Оценка ${g} поставлена`); render();
+  },
+  reset: () => confirmBox('Сбросить всё к начальному виду? Ученики, работы и ваши уроки удалятся.', 'Сбросить', () => {
+    db = seed(); save(); ui.edit = null; toast('Данные сброшены'); render();
+  })
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  const f = ACT[el.dataset.act];
+  if (f) f(el, e);
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'ans' && ui.lesson) {
+    ui.lesson.input = t.value;
+    const b = $('#checkBtn'); if (b) b.disabled = !t.value.trim();
+  }
+  if (t.dataset.bind && ui.edit) {
+    const l = getLesson(ui.edit);
+    if (l) { l[t.dataset.bind] = t.value; save(); }
+  }
+  if (t.dataset.comment) ui.comments[t.dataset.comment] = t.value;
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'pin') ACT['pin-ok']();
+  if (e.key === 'Enter' && (e.target.id === 'rFirst' || e.target.id === 'rLast')) ACT.register();
+});
+
+/* жизни восстанавливаются со временем — обновляем экран раз в минуту */
+setInterval(() => { if (!ui.lesson && ui.mode === 'student' && isRegistered() && !$('#modal').innerHTML) render(); }, 6e4);
+
+render();
+</script>
+</body>
+</html>
